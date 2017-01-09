@@ -1,6 +1,6 @@
 # UpdateRepos [![Build Status](https://travis-ci.org/pedrovgs/UpdateRepos.svg?branch=master)](https://travis-ci.org/pedrovgs/UpdateRepos)
 
-A purely functional Haskkel command line tool used to update all your git repositories with just one command.
+A command line tool used to update all your git repositories with just one command. Written using purely functional Haskell.
 
 <img alt="Follow me on Twitter" src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Haskell-Logo.svg/245px-Haskell-Logo.svg.png" height="60" width="82"/>
 
