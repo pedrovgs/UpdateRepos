@@ -33,6 +33,8 @@ test-suite update-repos-test
   main-is:             Spec.hs
   build-depends:       base
                      , update-repos
+                     , hspec
+                     , QuickCheck
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   default-language:    Haskell2010
 
