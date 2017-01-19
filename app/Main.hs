@@ -1,43 +1,45 @@
 module Main where
 
 import           Control.Monad
-import           Data.ByteString    (ByteString)
-import           Data.Maybe
-import qualified Data.Text          as T
-import           Data.Text.Encoding (encodeUtf8)
-import           Git
+import           Data.List
+import           Debug.Trace
 import           System.Directory
+import           System.FilePath.Posix
 import           UpdateRepos
 
 main :: IO ()
 main = do currentDir <- getCurrentDirectory
-          listOfFilesAndDirectories <- listDirectory currentDir
-          justDirectories <- filterM doesDirectoryExist listOfFilesAndDirectories
-          print $ "Current directory = " ++ show currentDir
-          print $ "List of files and directories = " ++ show listOfFilesAndDirectories
-          print $ "List of directories = " ++ show justDirectories
+          -- TODO: Just if
+          let path = currentDir ++ [pathSeparator]
+          gitDirectories <- listGitRepositories path
+          print $ "Current directory = " ++ show path
+          print $ "List of GIT directories = " ++ show gitDirectories
           print "We are done!"
 
-
-
-updateRepository :: FilePath -> IO ()
-updateRepository path = do
-    let repoOpts = RepositoryOptions { repoPath = path
-                                     , repoWorkingDir = Nothing
-                                     , repoIsBare = False
-                                     , repoAutoCreate = False }
-    repo <- openRepository repoOpts False
-    return
-
 listGitRepositories :: FilePath -> IO [FilePath]
-listGitRepositories path = do directories <- listDirectory path
-                              let gitRepositories = filter isGitRepository directories
-                              return gitRepositories
+listGitRepositories path = do subDirectories <- listDirectories path
+                              let isGitRepository = containsGitDirectory subDirectories
+                              if null subDirectories then return []
+                              else do restOfDirectories <- mapM listGitRepositories subDirectories
+                                      if isGitRepository then do let restOfGitDirectories = concat restOfDirectories
+                                                                 return (path : restOfGitDirectories)
+                                      else trace (show restOfDirectories) $ return (concat restOfDirectories)
 
 listDirectories :: FilePath -> IO [FilePath]
 listDirectories path = do subFilesAndSubDirectories <- listDirectory path
-                          filterM doesDirectoryExist subFilesAndSubDirectories
+                          directories <- filterM (isDirectory path) subFilesAndSubDirectories
+                          return (map (path ++ ) directories)
 
-isGitRepository :: FilePath -> Bool
-isGitRepository ".git" = True
-isGitRepository _      = False
+containsGitDirectory :: [FilePath] -> Bool
+containsGitDirectory = any isGitDirectory
+
+isDirectory :: FilePath -> FilePath -> IO Bool
+isDirectory origin dirName = do let absolutePath = origin ++ dirName
+                                let isGitDir = isGitDirectory absolutePath
+                                let isHidden = "." `isPrefixOf` absolutePath
+                                isDirectory <- doesDirectoryExist absolutePath
+                                return (isGitDir || (isDirectory && not isHidden))
+
+isGitDirectory :: FilePath -> Bool
+isGitDirectory ".git" = True
+isGitDirectory _      = False

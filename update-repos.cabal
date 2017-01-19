@@ -26,9 +26,9 @@ executable update-repos-exe
   build-depends:       base
                      , update-repos
                      , directory
-                     , gitlib
                      , bytestring
                      , text
+                     , filepath
   default-language:    Haskell2010
 
 test-suite update-repos-test
