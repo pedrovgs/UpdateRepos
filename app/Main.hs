@@ -5,7 +5,8 @@ import           System.Directory
 import           UpdateRepos
 
 main :: IO ()
-main = do currentDir <- getCurrentDirectory
+main = do print "Let's update your Git repositories!"
+          currentDir <- getCurrentDirectory
           gitDirectories <- listGitRepositories currentDir
           print $ "Current directory = " ++ show currentDir
           print $ "List of GIT directories = " ++ show gitDirectories
