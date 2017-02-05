@@ -2,44 +2,50 @@ module Main where
 
 import           Control.Monad
 import           Data.List
-import           Debug.Trace
+import           Data.String
 import           System.Directory
 import           System.FilePath.Posix
 import           UpdateRepos
 
 main :: IO ()
 main = do currentDir <- getCurrentDirectory
-          -- TODO: Just if
-          let path = currentDir ++ [pathSeparator]
-          gitDirectories <- listGitRepositories path
-          print $ "Current directory = " ++ show path
+          gitDirectories <- listGitRepositories currentDir
+          print $ "Current directory = " ++ show currentDir
           print $ "List of GIT directories = " ++ show gitDirectories
           print "We are done!"
 
 listGitRepositories :: FilePath -> IO [FilePath]
-listGitRepositories path = do subDirectories <- listDirectories path
-                              let isGitRepository = containsGitDirectory subDirectories
-                              if null subDirectories then return []
-                              else do restOfDirectories <- mapM listGitRepositories subDirectories
-                                      if isGitRepository then do let restOfGitDirectories = concat restOfDirectories
-                                                                 return (path : restOfGitDirectories)
-                                      else trace (show restOfDirectories) $ return (concat restOfDirectories)
+listGitRepositories absPath = do let path = appendSeparatorIfNeeded absPath
+                                 print ("Checking path " ++ show path)
+                                 subDirectories <- listDirectories path
+                                 let isGitRepository = containsGitMetadataDirectory subDirectories
+                                 if null subDirectories then return []
+                                 else do restOfDirectories <- mapM listGitRepositories subDirectories
+                                         if isGitRepository then do let restOfGitDirectories = concat restOfDirectories
+                                                                    return (path : restOfGitDirectories)
+                                         else return (concat restOfDirectories)
 
 listDirectories :: FilePath -> IO [FilePath]
 listDirectories path = do subFilesAndSubDirectories <- listDirectory path
-                          directories <- filterM (isDirectory path) subFilesAndSubDirectories
-                          return (map (path ++ ) directories)
+                          let absolutePath = map (\sub -> path ++ sub) subFilesAndSubDirectories
+                              absPathsWithSeparators = map appendSeparatorIfNeeded absolutePath
+                          filterM isDirectory absPathsWithSeparators
 
-containsGitDirectory :: [FilePath] -> Bool
-containsGitDirectory = any isGitDirectory
+isDirectory :: FilePath -> IO Bool
+isDirectory absolutePath = do let isHidden = "." `isPrefixOf` absolutePath
+                              isDirectory <- doesDirectoryExist absolutePath
+                              return (isDirectory && not isHidden)
 
-isDirectory :: FilePath -> FilePath -> IO Bool
-isDirectory origin dirName = do let absolutePath = origin ++ dirName
-                                let isGitDir = isGitDirectory absolutePath
-                                let isHidden = "." `isPrefixOf` absolutePath
-                                isDirectory <- doesDirectoryExist absolutePath
-                                return (isGitDir || (isDirectory && not isHidden))
+containsGitMetadataDirectory :: [FilePath] -> Bool
+containsGitMetadataDirectory = any isGitMetadataDirectory
 
-isGitDirectory :: FilePath -> Bool
-isGitDirectory ".git" = True
-isGitDirectory _      = False
+isGitMetadataDirectory :: FilePath -> Bool
+isGitMetadataDirectory ""      = False
+isGitMetadataDirectory ".git"  = True
+isGitMetadataDirectory ".git/" = True
+isGitMetadataDirectory (x:xs)  = isGitMetadataDirectory xs
+
+appendSeparatorIfNeeded :: String -> String
+appendSeparatorIfNeeded absPath
+  | last absPath == pathSeparator = absPath
+  | otherwise = absPath ++ [pathSeparator]
