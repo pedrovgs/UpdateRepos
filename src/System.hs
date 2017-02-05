@@ -6,17 +6,21 @@ import           System.Directory
 import           System.FilePath.Posix
 
 type FilesPredicate = [FilePath] -> Bool
+type StopSearchingPredicate = [FilePath] -> Bool
 
-listDirectoriesRecursive :: FilesPredicate -> FilePath -> IO [FilePath]
-listDirectoriesRecursive predicate absPath = do let path = appendSeparatorIfNeeded absPath
-                                                print ("Checking path " ++ show path)
-                                                subDirectories <- listDirectories path
-                                                let isGitRepository = predicate subDirectories
-                                                if null subDirectories then return []
-                                                else do restOfDirectories <- mapM (listDirectoriesRecursive predicate) subDirectories
-                                                        if isGitRepository then do let restOfGitDirectories = concat restOfDirectories
-                                                                                   return (path : restOfGitDirectories)
-                                                        else return (concat restOfDirectories)
+listDirectoriesRecursive :: FilesPredicate -> StopSearchingPredicate -> FilePath -> IO [FilePath]
+listDirectoriesRecursive predicate stopSearchingPredicate absPath =
+  do let path = appendSeparatorIfNeeded absPath
+     subDirectories <- listDirectories path
+     let predicateMatch = predicate subDirectories
+     let stopSearchingMatch = stopSearchingPredicate subDirectories
+     if null subDirectories then return []
+     else if predicateMatch then return [path]
+     else if stopSearchingMatch then return []
+     else do restOfDirectories <- mapM (listDirectoriesRecursive predicate stopSearchingPredicate) subDirectories
+             if predicateMatch then do let restOfGitDirectories = concat restOfDirectories
+                                       return (path : restOfGitDirectories)
+             else return (concat restOfDirectories)
 
 listDirectories :: FilePath -> IO [FilePath]
 listDirectories path = do subFilesAndSubDirectories <- listDirectory path
@@ -32,4 +36,6 @@ isDirectory absolutePath = do let isHidden = "." `isPrefixOf` absolutePath
 appendSeparatorIfNeeded :: String -> String
 appendSeparatorIfNeeded absPath
   | last absPath == pathSeparator = absPath
-  | otherwise = absPath ++ [pathSeparator]
+  | otherwise = absPath ++ separator
+
+separator = [pathSeparator]
