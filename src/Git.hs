@@ -19,4 +19,4 @@ contains directory path
   | null path = False
   | path == directory = True
   | path == directory ++ separator = True
-  | otherwise = contains directory (tail path) 
+  | otherwise = contains directory (tail path)
