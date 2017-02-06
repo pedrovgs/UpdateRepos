@@ -4,6 +4,9 @@ A command line tool used to update all your git repositories with just one comma
 
 <img alt="Follow me on Twitter" src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Haskell-Logo.svg/245px-Haskell-Logo.svg.png" height="60" width="82"/>
 
+### Screencast:
+
+![screencast](./art/screencast.git)
 ### Contributing:
 
 If you are going to modify the code or just review the implementation from any IDE I strongly recommend you to install [Atom](https://atom.io/) following this [guide](https://github.com/simonmichael/haskell-atom-setup) to set up the whole Haskell environment in a few minutes.
