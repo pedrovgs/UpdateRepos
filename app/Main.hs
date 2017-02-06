@@ -2,6 +2,7 @@ module Main where
 
 import           Control.Monad
 import           Data.Either
+import           Data.List
 import           Data.List.Split
 import           Git
 import           System.Directory
@@ -15,19 +16,19 @@ main = do isReady <- isEnvironmentReady
                   currentDir <- getCurrentDirectory
                   repositories <- listGitRepositories currentDir
                   updateReposResult <- mapM updateGitRepository repositories
-                  putStrLn (prettyfiResults updateReposResult)
+                  putStrLn (prettyfiResults updateReposResult ++ "\n")
                   putStrLn "We are done!"
 
 prettyfiResults :: [Either UpdateRepoError UpdateRepoSuccess] -> String
-prettyfiResults results = foldr (++) "\n" prettyResults
+prettyfiResults results = intercalate "\n" prettyResults
                           where prettyResults = map prettifyResult results
 
 prettifyResult :: Either UpdateRepoError UpdateRepoSuccess -> String
-prettifyResult (Right (UpdateRepoSuccess path result)) = "SUCCESS!! Repo: " ++ prettifyPath path ++ " updated with result " ++ prettifyStdOut result
+prettifyResult (Right (UpdateRepoSuccess path result)) = "SUCCESS!! Repo: " ++ prettifyPath path ++ " updated with result: " ++ prettifyStdOut result
 prettifyResult (Left (UpdateRepoError path result))    = "ERROR :_( Repo: " ++ prettifyPath path ++ " updated with result " ++ prettifyStdOut result
 
 prettifyPath :: FilePath -> String
-prettifyPath path = last parts
+prettifyPath path = last $ init parts
                     where parts = splitOn [pathSeparator] path
 
 prettifyStdOut :: String -> String

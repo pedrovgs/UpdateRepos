@@ -27,9 +27,10 @@ getCurrentBranch path = do let gitRepoPath = appendGitFolder path
 
 updateRepo :: FilePath -> String -> IO (Either UpdateRepoError UpdateRepoSuccess)
 updateRepo path branch = do let gitRepoPath = appendGitFolder path
-                            (exitCode, stdOut, stdErr) <- readProcessWithExitCode "git" ["--git-dir", gitRepoPath, "pull", "origin", branch] []
+                            readProcessWithExitCode "git" ["--git-dir", gitRepoPath, "stash"] []
+                            (exitCode, stdOut, stdErr) <- readProcessWithExitCode "git" ["--git-dir", gitRepoPath, "pull", "origin", branch, "-n" , "-f"] []
                             if exitCode == ExitSuccess then return (Right (UpdateRepoSuccess path stdOut))
-                            else return (Left (UpdateRepoError path stdOut))
+                            else return (Left (UpdateRepoError path stdErr))
 
 containsGitMetadataDirectory :: [FilePath] -> Bool
 containsGitMetadataDirectory = any isGitMetadataDirectory
