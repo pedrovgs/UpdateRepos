@@ -24,8 +24,8 @@ prettyfiResults results = intercalate "\n" prettyResults
                           where prettyResults = map prettifyResult results
 
 prettifyResult :: Either UpdateRepoError UpdateRepoSuccess -> String
-prettifyResult (Right (UpdateRepoSuccess path result)) = "SUCCESS!! Repo: " ++ prettifyPath path ++ " updated with result: " ++ prettifyStdOut result
-prettifyResult (Left (UpdateRepoError path result))    = "ERROR :_( Repo: " ++ prettifyPath path ++ " updated with result " ++ prettifyStdOut result
+prettifyResult (Right (UpdateRepoSuccess path result)) = greenColor ++ "Success! Repo: " ++ prettifyPath path ++ " updated with result: " ++ prettifyStdOut result ++ clearColor
+prettifyResult (Left (UpdateRepoError path result))    = redColor ++ "Error :_( Repo: " ++ prettifyPath path ++ " updated with result " ++ prettifyStdOut result  ++ clearColor
 
 prettifyPath :: FilePath -> String
 prettifyPath path = last $ init parts
@@ -33,3 +33,7 @@ prettifyPath path = last $ init parts
 
 prettifyStdOut :: String -> String
 prettifyStdOut = filter (/= '\n')
+
+clearColor = "\x1b[0m"
+greenColor = "\x1b[32m"
+redColor = "\x1b[31m"
