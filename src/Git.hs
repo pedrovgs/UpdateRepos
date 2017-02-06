@@ -15,9 +15,14 @@ isGitInstalled = do (exitCode, stdOut, stdErr) <- readProcessWithExitCode "git" 
                     return (exitCode == ExitSuccess)
 
 getCurrentBranch :: FilePath ->  IO String
-getCurrentBranch path = do let gitRepoPath = path ++ ".git"
+getCurrentBranch path = do let gitRepoPath = appendGitFolder path
                            (exitCode, stdOut, stdErr) <- readProcessWithExitCode "git" ["--git-dir", gitRepoPath, "branch"] []
                            return (extractCurrentBranch stdOut)
+
+updateRepo :: FilePath -> String -> IO (Either UpdateRepoError FilePath)
+updateRepo path branch = do let gitRepoPath = appendGitFolder path
+                            (exitCode, stdOut, stdErr) <- readProcessWithExitCode "git" ["--git-dir", gitRepoPath, "pull", "origin", branch] []
+                            return (Right stdOut)
 
 containsGitMetadataDirectory :: [FilePath] -> Bool
 containsGitMetadataDirectory = any isGitMetadataDirectory
@@ -26,7 +31,7 @@ containsOtherVCSMetadataDirectory :: [FilePath] -> Bool
 containsOtherVCSMetadataDirectory = any isOtherVCSDierctory
 
 isGitMetadataDirectory :: FilePath -> Bool
-isGitMetadataDirectory = contains ".git"
+isGitMetadataDirectory = contains gitFolder
 
 isOtherVCSDierctory :: FilePath -> Bool
 isOtherVCSDierctory = contains ".hg"
@@ -42,3 +47,7 @@ extractCurrentBranch :: String -> String
 extractCurrentBranch stdOut = drop 2 $ head selectedBranches
                               where branches = splitOn "\n" stdOut
                                     selectedBranches = filter (\branch -> '*' `elem` branch) branches
+appendGitFolder :: String -> String
+appendGitFolder path = path ++ gitFolder
+
+gitFolder = ".git"

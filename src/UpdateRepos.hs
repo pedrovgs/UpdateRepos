@@ -12,4 +12,4 @@ listGitRepositories = listDirectoriesRecursive containsGitMetadataDirectory cont
 
 updateGitRepository :: FilePath -> IO (Either UpdateRepoError FilePath)
 updateGitRepository path = do currentBranch <- getCurrentBranch path
-                              return (Right currentBranch)
+                              updateRepo path currentBranch
