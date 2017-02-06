@@ -6,7 +6,8 @@ A command line tool used to update all your git repositories with just one comma
 
 ### Screencast:
 
-![screencast](./art/screencast.git)
+![screencast](./art/screencast.gif)
+
 ### Contributing:
 
 If you are going to modify the code or just review the implementation from any IDE I strongly recommend you to install [Atom](https://atom.io/) following this [guide](https://github.com/simonmichael/haskell-atom-setup) to set up the whole Haskell environment in a few minutes.
