@@ -16,8 +16,8 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src
   exposed-modules:     UpdateRepos
-  other-modules:       Git
-                     , System
+                     , Git
+  other-modules:       System
   build-depends:       base >= 4.7 && < 5
                      , directory
                      , bytestring
@@ -35,6 +35,8 @@ executable update-repos
   build-depends:       base
                      , update-repos
                      , directory
+                     , filepath
+                     , split
   default-language:    Haskell2010
 
 test-suite update-repos-test

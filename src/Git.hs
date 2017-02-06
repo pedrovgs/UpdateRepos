@@ -7,7 +7,13 @@ import           System.Exit
 import           System.Process
 
 data UpdateRepoError = UpdateRepoError {
-  message:: String
+  path    :: FilePath
+, message :: String
+} deriving (Eq, Show)
+
+data UpdateRepoSuccess = UpdateRepoSuccess {
+  repo   :: FilePath
+, result :: String
 } deriving (Eq, Show)
 
 isGitInstalled :: IO Bool
@@ -19,10 +25,11 @@ getCurrentBranch path = do let gitRepoPath = appendGitFolder path
                            (exitCode, stdOut, stdErr) <- readProcessWithExitCode "git" ["--git-dir", gitRepoPath, "branch"] []
                            return (extractCurrentBranch stdOut)
 
-updateRepo :: FilePath -> String -> IO (Either UpdateRepoError FilePath)
+updateRepo :: FilePath -> String -> IO (Either UpdateRepoError UpdateRepoSuccess)
 updateRepo path branch = do let gitRepoPath = appendGitFolder path
                             (exitCode, stdOut, stdErr) <- readProcessWithExitCode "git" ["--git-dir", gitRepoPath, "pull", "origin", branch] []
-                            return (Right stdOut)
+                            if exitCode == ExitSuccess then return (Right (UpdateRepoSuccess path stdOut))
+                            else return (Left (UpdateRepoError path stdOut))
 
 containsGitMetadataDirectory :: [FilePath] -> Bool
 containsGitMetadataDirectory = any isGitMetadataDirectory
