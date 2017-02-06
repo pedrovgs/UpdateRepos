@@ -24,6 +24,7 @@ library
                      , text
                      , filepath
                      , process
+                     , split
                      , monad-parallel
   default-language:    Haskell2010
 
