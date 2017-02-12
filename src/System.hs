@@ -1,6 +1,6 @@
-module System where
+module System (listDirectoriesRecursive, separator) where
 
-import Control.Monad
+import           Control.Monad
 import qualified Control.Monad.Parallel as P
 import           Data.List
 import           System.Directory
@@ -18,7 +18,7 @@ listDirectoriesRecursive predicate stopSearchingPredicate absPath =
      if null subDirectories then return []
      else if predicateMatch then return [path]
      else if stopSearchingMatch then return []
-     else do restOfDirectories <- mapM (listDirectoriesRecursive predicate stopSearchingPredicate) subDirectories
+     else do restOfDirectories <- P.mapM (listDirectoriesRecursive predicate stopSearchingPredicate) subDirectories
              if predicateMatch then do let restOfGitDirectories = concat restOfDirectories
                                        return (path : restOfGitDirectories)
              else return (concat restOfDirectories)

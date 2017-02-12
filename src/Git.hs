@@ -1,4 +1,12 @@
-module Git where
+module Git (
+    UpdateRepoError(..)
+  , UpdateRepoSuccess(..)
+  , isGitInstalled
+  , getCurrentBranch
+  , updateRepo
+  , containsGitMetadataDirectory
+  , containsOtherVCSMetadataDirectory
+)where
 
 import           Data.List.Split
 import           System
