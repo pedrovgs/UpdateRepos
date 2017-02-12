@@ -14,10 +14,11 @@ import           SystemFree
 import           UpdateRepos
 
 main :: IO ()
-main = do isReady <- isEnvironmentReady
+main = do let ?systemInterpreter = run
+              ?boolInterpreter = run
+          isReady <- isEnvironmentReady
           if not isReady then putStrLn "You need to install Git before to execute update-repos"
           else do putStrLn "Let's update your Git repositories!\n"
-                  let ?systemInterpreter = run
                   currentDir <- getCurrentDirectory
                   repositories <- listGitRepositories currentDir
                   updateReposResult <- P.mapM updateGitRepository repositories
