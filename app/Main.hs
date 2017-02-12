@@ -1,3 +1,5 @@
+{-# LANGUAGE ImplicitParams #-}
+
 module Main where
 
 import           Control.Monad
@@ -8,16 +10,19 @@ import           Data.List.Split
 import           Git
 import           System.Directory
 import           System.FilePath.Posix
+import           SystemFree
 import           UpdateRepos
 
 main :: IO ()
 main = do isReady <- isEnvironmentReady
           if not isReady then putStrLn "You need to install Git before to execute update-repos"
           else do putStrLn "Let's update your Git repositories!\n"
+                  let ?systemInterpreter = run
                   currentDir <- getCurrentDirectory
                   repositories <- listGitRepositories currentDir
                   updateReposResult <- P.mapM updateGitRepository repositories
-                  putStrLn (prettyfiResults updateReposResult ++ "\n")
+                  if null updateReposResult then putStrLn "There are no repos.\n"
+                  else putStrLn (prettyfiResults updateReposResult ++ "\n")
                   putStrLn "We are done!"
 
 prettyfiResults :: [Either UpdateRepoError UpdateRepoSuccess] -> String

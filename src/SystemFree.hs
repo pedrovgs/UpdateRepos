@@ -19,7 +19,9 @@ isDirectory' path = liftF $ IsDirectory path id
 listDirectory' :: FilePath -> System [FilePath]
 listDirectory' path = liftF $ ListDirectory path id
 
-run :: System r -> IO r
+type SystemFreeInterpreter r = System r -> IO r
+
+run :: SystemFreeInterpreter r
 run (Pure r)                    = return r
 run (Free (IsDirectory path t)) = do result <- doesDirectoryExist path
                                      run $ t result

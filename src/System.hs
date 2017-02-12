@@ -1,3 +1,5 @@
+{-# LANGUAGE ImplicitParams #-}
+
 module System (listDirectoriesRecursive, separator) where
 
 import           Control.Monad
@@ -9,7 +11,7 @@ import           SystemFree
 type FilesPredicate = [FilePath] -> Bool
 type StopSearchingPredicate = [FilePath] -> Bool
 
-listDirectoriesRecursive :: FilesPredicate -> StopSearchingPredicate -> FilePath -> IO [FilePath]
+listDirectoriesRecursive :: (?systemInterpreter :: SystemFreeInterpreter Bool) => FilesPredicate -> StopSearchingPredicate -> FilePath -> IO [FilePath]
 listDirectoriesRecursive predicate stopSearchingPredicate absPath =
   do let path = appendSeparatorIfNeeded absPath
      subDirectories <- listDirectories path
@@ -23,15 +25,15 @@ listDirectoriesRecursive predicate stopSearchingPredicate absPath =
                                        return (path : restOfGitDirectories)
              else return (concat restOfDirectories)
 
-listDirectories :: FilePath -> IO [FilePath]
+listDirectories :: (?systemInterpreter :: SystemFreeInterpreter Bool) => FilePath -> IO [FilePath]
 listDirectories path = do subFilesAndSubDirectories <- run $ listDirectory' path
                           let absolutePath = map (\sub -> path ++ sub) subFilesAndSubDirectories
                               absPathsWithSeparators = map appendSeparatorIfNeeded absolutePath
                           filterM isDirectory absPathsWithSeparators
 
-isDirectory :: FilePath -> IO Bool
+isDirectory :: (?systemInterpreter :: SystemFreeInterpreter Bool) => FilePath -> IO Bool
 isDirectory absolutePath = do let isHidden = "." `isPrefixOf` absolutePath
-                              isDirectory <- run $ isDirectory' absolutePath
+                              isDirectory <- ?systemInterpreter $ isDirectory' absolutePath
                               return (isDirectory && not isHidden)
 
 appendSeparatorIfNeeded :: String -> String
