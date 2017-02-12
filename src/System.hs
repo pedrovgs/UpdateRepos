@@ -3,8 +3,8 @@ module System (listDirectoriesRecursive, separator) where
 import           Control.Monad
 import qualified Control.Monad.Parallel as P
 import           Data.List
-import           System.Directory
 import           System.FilePath.Posix
+import           SystemFree
 
 type FilesPredicate = [FilePath] -> Bool
 type StopSearchingPredicate = [FilePath] -> Bool
@@ -24,14 +24,14 @@ listDirectoriesRecursive predicate stopSearchingPredicate absPath =
              else return (concat restOfDirectories)
 
 listDirectories :: FilePath -> IO [FilePath]
-listDirectories path = do subFilesAndSubDirectories <- listDirectory path
+listDirectories path = do subFilesAndSubDirectories <- run $ listDirectory' path
                           let absolutePath = map (\sub -> path ++ sub) subFilesAndSubDirectories
                               absPathsWithSeparators = map appendSeparatorIfNeeded absolutePath
                           filterM isDirectory absPathsWithSeparators
 
 isDirectory :: FilePath -> IO Bool
 isDirectory absolutePath = do let isHidden = "." `isPrefixOf` absolutePath
-                              isDirectory <- doesDirectoryExist absolutePath
+                              isDirectory <- run $ isDirectory' absolutePath
                               return (isDirectory && not isHidden)
 
 appendSeparatorIfNeeded :: String -> String
