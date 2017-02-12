@@ -27,8 +27,10 @@ getCurrentBranch path = do let gitRepoPath = appendGitFolder path
 
 updateRepo :: FilePath -> String -> IO (Either UpdateRepoError UpdateRepoSuccess)
 updateRepo path branch = do let gitRepoPath = appendGitFolder path
-                            readProcessWithExitCode "git" ["--git-dir", gitRepoPath, "stash"] []
-                            (exitCode, stdOut, stdErr) <- readProcessWithExitCode "git" ["--git-dir", gitRepoPath, "pull", "origin", branch, "-n" , "-f"] []
+                            readProcessWithExitCode "git" ["--git-dir", "--work-tree", path, gitRepoPath, "fetch", "origin", "master"] []
+                            readProcessWithExitCode "git" ["--git-dir", "--work-tree", path, gitRepoPath, "fetch", "origin", "develop"] []
+                            readProcessWithExitCode "git" ["--git-dir", "--work-tree", path, gitRepoPath, "stash"] []
+                            (exitCode, stdOut, stdErr) <- readProcessWithExitCode "git" ["--git-dir", gitRepoPath, "--work-tree", path, "pull", "origin", branch, "-n" , "-f"] []
                             if exitCode == ExitSuccess then return (Right (UpdateRepoSuccess path stdOut))
                             else return (Left (UpdateRepoError path stdErr))
 
