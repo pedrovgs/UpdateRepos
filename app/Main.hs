@@ -1,6 +1,7 @@
 module Main where
 
 import           Control.Monad
+import qualified Control.Monad.Parallel as P
 import           Data.Either
 import           Data.List
 import           Data.List.Split
@@ -15,7 +16,7 @@ main = do isReady <- isEnvironmentReady
           else do putStrLn "Let's update your Git repositories!\n"
                   currentDir <- getCurrentDirectory
                   repositories <- listGitRepositories currentDir
-                  updateReposResult <- mapM updateGitRepository repositories
+                  updateReposResult <- P.mapM updateGitRepository repositories
                   putStrLn (prettyfiResults updateReposResult ++ "\n")
                   putStrLn "We are done!"
 
