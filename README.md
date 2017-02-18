@@ -4,9 +4,53 @@ A command line tool used to update all your git repositories with just one comma
 
 <img alt="Follow me on Twitter" src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Haskell-Logo.svg/245px-Haskell-Logo.svg.png" height="60" width="82"/>
 
+### Screencast:
+
+![screencast](./art/screencast.git)
+
+### Usage:
+
+* Install ``stack`` following [this](https://docs.haskellstack.org/en/stable/install_and_upgrade/#mac-os-x) tutorial.
+
+* Clone this repository:
+
+```
+git clone git@github.com:pedrovgs/UpdateRepos.git
+cd UpdateRepos
+```
+
+* Build and install the ``update-repos`` binary file:
+
+```
+stack install
+stack build
+```
+
+* Execute the already installed binary file:
+
+```
+update-repos
+```
+
 ### Contributing:
 
 If you are going to modify the code or just review the implementation from any IDE I strongly recommend you to install [Atom](https://atom.io/) following this [guide](https://github.com/simonmichael/haskell-atom-setup) to set up the whole Haskell environment in a few minutes.
+
+You can build this project using ``stack`` and just a bunch of commands:
+
+```
+// Open a Haskell REPL with the modules already loaded
+stack ghci
+
+// Generates the executable file associated with the project
+stack build
+
+// Installs the already generated executable file in your ~/.local/bin folder
+stack install
+
+// Clean a previous build
+stack clean
+```
 
 The production code is covered covered using unit and [property based](https://en.wikipedia.org/wiki/QuickCheck) tests. If you want to build and execute the project tests you just need to install [Stack](https://docs.haskellstack.org/en/stable/README/) and execute the following command:
 
