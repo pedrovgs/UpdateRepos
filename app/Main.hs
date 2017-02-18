@@ -23,11 +23,11 @@ main = do let ?systemInterpreter = run
                   repositories <- listGitRepositories currentDir
                   updateReposResult <- P.mapM updateGitRepository repositories
                   if null updateReposResult then putStrLn "There are no repos.\n"
-                  else putStrLn (prettyfiResults updateReposResult ++ "\n")
+                  else putStrLn (prettifyResults updateReposResult ++ "\n")
                   putStrLn "We are done!"
 
-prettyfiResults :: [Either UpdateRepoError UpdateRepoSuccess] -> String
-prettyfiResults results = intercalate "\n" prettyResults
+prettifyResults :: [Either UpdateRepoError UpdateRepoSuccess] -> String
+prettifyResults results = intercalate "\n" prettyResults
                           where prettyResults = map prettifyResult results
 
 prettifyResult :: Either UpdateRepoError UpdateRepoSuccess -> String

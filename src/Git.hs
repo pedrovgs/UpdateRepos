@@ -38,7 +38,6 @@ updateRepo :: (?systemInterpreter :: SystemFreeInterpreter (ExitCode, String, St
 updateRepo path branch = do let gitRepoPath = appendGitFolder path
                             ?systemInterpreter $ execute "git" ["--git-dir", "--work-tree", path, gitRepoPath, "fetch", "origin", "master"]
                             ?systemInterpreter $ execute "git" ["--git-dir", "--work-tree", path, gitRepoPath, "fetch", "origin", "develop"]
-                            ?systemInterpreter $ execute "git" ["--git-dir", "--work-tree", path, gitRepoPath, "stash"]
                             (exitCode, stdOut, stdErr) <- ?systemInterpreter $ execute "git" ["--git-dir", gitRepoPath, "--work-tree", path, "pull", "origin", branch, "-n" , "-f"]
                             if exitCode == ExitSuccess then return (Right (UpdateRepoSuccess path stdOut))
                             else return (Left (UpdateRepoError path stdErr))
