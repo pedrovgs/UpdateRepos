@@ -22,6 +22,17 @@ spec = describe "Git module requirements" $ do
      isGitInstalled
   it "returns the current branch obtained from the list of branches git returns" $
     property $ prop_BranchMarkedWithAsteriskRepresentsTheCurrentBranch "any-branch"
+  it "returns update repo error if there is something wrong" $ unsafePerformIO $ do
+    let errorMessage = "Merge conflict error"
+    let ?systemInterpreter = executionInterpreter $ executionError errorMessage
+    result <- updateRepo "/Pedro/Users/Repository/" "currentBanch"
+    return (result == Left (UpdateRepoError "/Pedro/Users/Repository/" errorMessage))
+  it "returns update repo success if result of the pull is correct" $ unsafePerformIO $ do
+    let outputMessage = "Already up-to-date."
+    let ?systemInterpreter = executionInterpreter $ executionSuccess outputMessage
+    result <- updateRepo "/Pedro/Users/Repository/" "currentBanch"
+    return (result == Right (UpdateRepoSuccess "/Pedro/Users/Repository/" outputMessage))
+
 
 prop_BranchMarkedWithAsteriskRepresentsTheCurrentBranch :: String -> Property
 prop_BranchMarkedWithAsteriskRepresentsTheCurrentBranch branch =
@@ -53,6 +64,16 @@ gitInstalledInterpreter result (Free (Execute command params t)) =
   where errorCode = if result then ExitSuccess else ExitFailure 9
 gitInstalledInterpreter _ t = run t
 
+executionInterpreter :: (ExitCode, String, String) -> SystemFreeInterpreter (ExitCode, String, String)
+executionInterpreter result (Free (Execute command params t)) =
+  run $ t result
+executionInterpreter _ t = run t
+
 insertAt :: Int -> a -> [a] -> [a]
 insertAt z y xs = as ++ (y:bs)
                   where (as,bs) = splitAt z xs
+executionError :: String -> (ExitCode, String, String)
+executionError stdError = (ExitFailure (-1), "", stdError)
+
+executionSuccess :: String -> (ExitCode, String, String)
+executionSuccess stdOut = (ExitSuccess, stdOut, "")
