@@ -16,6 +16,7 @@ import           UpdateRepos
 main :: IO ()
 main = do let ?systemInterpreter = run
               ?boolInterpreter = run
+              ?fileInterpreter = run
           isReady <- isEnvironmentReady
           if not isReady then putStrLn "You need to install Git before to execute update-repos"
           else do putStrLn "Let's update your Git repositories!\n"

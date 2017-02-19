@@ -15,7 +15,6 @@ import           Test.QuickCheck
 import           UpdateRepos
 
 spec = describe "Git module requirements" $ do
-  let ?boolInterpreter = run
   it "returns false if Git is not installed" $ unsafePerformIO $ do
      let ?systemInterpreter = gitInstalledInterpreter False
      result <- isEnvironmentReady
@@ -33,6 +32,11 @@ spec = describe "Git module requirements" $ do
     let ?systemInterpreter = executionInterpreter $ executionSuccess outputMessage
     result <- updateGitRepository "/Pedro/Users/Repository/"
     return (result == Right (UpdateRepoSuccess "/Pedro/Users/Repository/" outputMessage))
+  it "returns git repositories obtained using a recursive search" $ unsafePerformIO $ do
+    let ?boolInterpreter = fakeIsDirectoryInterpreter
+        ?fileInterpreter = fakeFileSystemInterpreter
+    result <- listGitRepositories "/projects/"
+    return (result == ["/projects/UpdateRepos/", "/projects/HaskellKatas/"])
 
 gitInstalledInterpreter :: Bool -> SystemFreeInterpreter (ExitCode, String, String)
 gitInstalledInterpreter result (Free (Execute command params t)) =
@@ -44,6 +48,25 @@ executionInterpreter :: (ExitCode, String, String) -> SystemFreeInterpreter (Exi
 executionInterpreter result (Free (Execute command params t)) =
   run $ t result
 executionInterpreter _ t = run t
+
+fakeFileSystemInterpreter :: SystemFreeInterpreter [FilePath]
+fakeFileSystemInterpreter (Free (ListDirectory "/projects/" t)) = run $ t ["UpdateRepos", "HaskellKatas", "misc"]
+fakeFileSystemInterpreter (Free (ListDirectory "/projects/UpdateRepos/" t)) = run $ t [".git", "src", "test"]
+fakeFileSystemInterpreter (Free (ListDirectory "/projects/HaskellKatas/" t)) = run $ t [".git", "src", "test"]
+fakeFileSystemInterpreter (Free (ListDirectory "/projects/misc/" t)) = run $ t ["a", "b", "c"]
+fakeFileSystemInterpreter (Free (ListDirectory "/projects/UpdateRepos/src/" t)) = run $ t ["a", "b", "c"]
+fakeFileSystemInterpreter (Free (ListDirectory "/projects/UpdateRepos/test/" t)) = run $ t ["a", "b", "c"]
+fakeFileSystemInterpreter (Free (ListDirectory "/projects/HaskellKatas/src/" t)) = run $ t ["a", "b", "c"]
+fakeFileSystemInterpreter (Free (ListDirectory "/projects/HaskellKatas/test/" t)) = run $ t ["a", "b", "c"]
+fakeFileSystemInterpreter (Free (ListDirectory _ t)) = run $ t []
+fakeFileSystemInterpreter t = run t
+
+fakeIsDirectoryInterpreter :: SystemFreeInterpreter Bool
+fakeIsDirectoryInterpreter (Free (IsDirectory "a" t))  = run $ t False
+fakeIsDirectoryInterpreter (Free (IsDirectory "b" t))  = run $ t False
+fakeIsDirectoryInterpreter (Free (IsDirectory "c" t))  = run $ t False
+fakeIsDirectoryInterpreter (Free (IsDirectory path t)) = run $ t True
+fakeIsDirectoryInterpreter t                           = run t
 
 insertAt :: Int -> a -> [a] -> [a]
 insertAt z y xs = as ++ (y:bs)

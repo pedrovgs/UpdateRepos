@@ -5,14 +5,14 @@ module System (listDirectoriesRecursive, separator) where
 import           Control.Monad
 import qualified Control.Monad.Parallel as P
 import           Data.List
-import           System.Directory
 import           System.FilePath.Posix
 import           SystemFree
+import           System.Exit
 
 type FilesPredicate = [FilePath] -> Bool
 type StopSearchingPredicate = [FilePath] -> Bool
 
-listDirectoriesRecursive :: (?boolInterpreter :: SystemFreeInterpreter Bool) => FilesPredicate -> StopSearchingPredicate -> FilePath -> IO [FilePath]
+listDirectoriesRecursive :: (?boolInterpreter :: SystemFreeInterpreter Bool) => (?fileInterpreter :: SystemFreeInterpreter [FilePath]) => FilesPredicate -> StopSearchingPredicate -> FilePath -> IO [FilePath]
 listDirectoriesRecursive predicate stopSearchingPredicate absPath =
   do let path = appendSeparatorIfNeeded absPath
      subDirectories <- listDirectories path
@@ -26,8 +26,8 @@ listDirectoriesRecursive predicate stopSearchingPredicate absPath =
                                        return (path : restOfGitDirectories)
              else return (concat restOfDirectories)
 
-listDirectories :: (?boolInterpreter :: SystemFreeInterpreter Bool) => FilePath -> IO [FilePath]
-listDirectories path = do subFilesAndSubDirectories <- run $ listDirectory' path
+listDirectories :: (?boolInterpreter :: SystemFreeInterpreter Bool) => (?fileInterpreter :: SystemFreeInterpreter [FilePath]) => FilePath -> IO [FilePath]
+listDirectories path = do subFilesAndSubDirectories <- ?fileInterpreter $ listDirectory' path
                           let absolutePath = map (\sub -> path ++ sub) subFilesAndSubDirectories
                               absPathsWithSeparators = map appendSeparatorIfNeeded absolutePath
                           filterM isDirectory absPathsWithSeparators
