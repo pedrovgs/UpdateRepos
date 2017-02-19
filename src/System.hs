@@ -5,6 +5,7 @@ module System (listDirectoriesRecursive, separator) where
 import           Control.Monad
 import qualified Control.Monad.Parallel as P
 import           Data.List
+import           System.Directory
 import           System.FilePath.Posix
 import           SystemFree
 
