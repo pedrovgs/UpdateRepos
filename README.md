@@ -22,8 +22,9 @@ cd UpdateRepos
 * Build and install the ``update-repos`` binary file:
 
 ```
-stack install
+stack setup
 stack build
+stack install
 ```
 
 * Execute the already installed binary file:
