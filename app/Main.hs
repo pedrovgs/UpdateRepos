@@ -1,4 +1,6 @@
-{-# LANGUAGE ImplicitParams #-}
+{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE ImplicitParams    #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Main where
 
@@ -8,23 +10,40 @@ import           Data.Either
 import           Data.List
 import           Data.List.Split
 import           Git
+import           Options.Generic
 import           System.Directory
 import           System.FilePath.Posix
 import           SystemFree
 import           UpdateRepos
+import           System.Exit
+import           System
+
+data UpdateReposParams = UpdateReposParams { path :: Maybe String } deriving (Generic, Show)
+
+instance ParseRecord UpdateReposParams
 
 main :: IO ()
 main = do let ?systemInterpreter = run
               ?boolInterpreter = run
+          params <- getRecord "update-repos command-line tool help"
           isReady <- isEnvironmentReady
           if not isReady then putStrLn "You need to install Git before to execute update-repos"
-          else do putStrLn "Let's update your Git repositories!\n"
-                  currentDir <- getCurrentDirectory
-                  repositories <- listGitRepositories currentDir
-                  updateReposResult <- P.mapM updateGitRepository repositories
-                  if null updateReposResult then putStrLn "There are no repos.\n"
-                  else putStrLn (prettifyResults updateReposResult ++ "\n")
-                  putStrLn "We are done!"
+          else do currentPath <- getCurrentDirectory
+                  case params of
+                       UpdateReposParams (Just path) -> do let rootPath = appendSeparatorIfNeeded path
+                                                           isValidDirectory <- doesDirectoryExist rootPath
+                                                           if isValidDirectory then updateRepos path
+                                                           else putStrLn $ "update-repos: no such file or directory:" ++ rootPath
+                       UpdateReposParams Nothing     -> updateRepos currentPath
+
+
+updateRepos :: (?boolInterpreter :: SystemFreeInterpreter Bool) => (?systemInterpreter :: SystemFreeInterpreter (ExitCode, String, String)) => String -> IO ()
+updateRepos path = do putStrLn "Let's update your Git repositories!\n"
+                      repositories <- listGitRepositories path
+                      updateReposResult <- P.mapM updateGitRepository repositories
+                      if null updateReposResult then putStrLn "There are no repos.\n"
+                      else putStrLn (prettifyResults updateReposResult ++ "\n")
+                      putStrLn "We are done!"
 
 prettifyResults :: [Either UpdateRepoError UpdateRepoSuccess] -> String
 prettifyResults results = intercalate "\n" prettyResults
