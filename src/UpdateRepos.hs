@@ -8,7 +8,6 @@ import           System
 import           System.Exit
 import           SystemFree
 
-
 isEnvironmentReady :: (?systemInterpreter :: SystemFreeInterpreter (ExitCode, String, String)) => IO Bool
 isEnvironmentReady = isGitInstalled
 
