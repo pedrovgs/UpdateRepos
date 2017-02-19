@@ -32,6 +32,10 @@ spec = describe "Git module requirements" $ do
     let ?systemInterpreter = executionInterpreter $ executionSuccess outputMessage
     result <- updateRepo "/Pedro/Users/Repository/" "currentBanch"
     return (result == Right (UpdateRepoSuccess "/Pedro/Users/Repository/" outputMessage))
+  it "returns true if the list of file paths contains a .git folder" $
+    property $ prop_ContainsAGitDirectoryIfThereIsAGitMetadataFolder
+  it "returns false if the list of file paths does contains a .git folder" $
+    property $ prop_DoesNotContainsAGitDirectoryIfThereIsAGitMetadataFolder
 
 
 prop_BranchMarkedWithAsteriskRepresentsTheCurrentBranch :: String -> Property
@@ -40,6 +44,31 @@ prop_BranchMarkedWithAsteriskRepresentsTheCurrentBranch branch =
     let ?systemInterpreter = currentBranchInterpreter genBranches
     result <- getCurrentBranch "anyPath"
     return (result == branch))
+
+prop_ContainsAGitDirectoryIfThereIsAGitMetadataFolder :: Property
+prop_ContainsAGitDirectoryIfThereIsAGitMetadataFolder =
+  forAll foldersIncludingGit containsGitMetadataDirectory
+
+prop_DoesNotContainsAGitDirectoryIfThereIsAGitMetadataFolder :: Property
+prop_DoesNotContainsAGitDirectoryIfThereIsAGitMetadataFolder =
+  forAll folders (\folders -> not $ containsGitMetadataDirectory folders)
+
+foldersIncludingGit :: Gen [FilePath]
+foldersIncludingGit = foldersIncludingPath ".git"
+
+foldersIncludingPath :: FilePath -> Gen [FilePath]
+foldersIncludingPath path =
+  do position <- arbitrary
+     genFolders <- folders
+     let arrayPosition = abs position `mod` length genFolders
+         folders = insertAt position path genFolders
+     return (folders)
+
+folders :: Gen [FilePath]
+folders = listOf folder
+
+folder :: Gen FilePath
+folder = listOf $ choose ('a', 'z')
 
 repositoryBranches :: String -> Gen String
 repositoryBranches branch =
