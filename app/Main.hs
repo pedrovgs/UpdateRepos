@@ -25,6 +25,7 @@ instance ParseRecord UpdateReposParams
 main :: IO ()
 main = do let ?systemInterpreter = run
               ?boolInterpreter = run
+              ?fileInterpreter = run
           params <- getRecord "update-repos command-line tool help"
           isReady <- isEnvironmentReady
           if not isReady then putStrLn "You need to install Git before to execute update-repos"
@@ -37,7 +38,7 @@ main = do let ?systemInterpreter = run
                        UpdateReposParams Nothing     -> updateRepos currentPath
 
 
-updateRepos :: (?boolInterpreter :: SystemFreeInterpreter Bool) => (?systemInterpreter :: SystemFreeInterpreter (ExitCode, String, String)) => String -> IO ()
+updateRepos :: (?boolInterpreter :: SystemFreeInterpreter Bool) => (?systemInterpreter :: SystemFreeInterpreter (ExitCode, String, String)) => (?fileInterpreter :: SystemFreeInterpreter [FilePath]) => String -> IO ()
 updateRepos path = do putStrLn "Let's update your Git repositories!\n"
                       repositories <- listGitRepositories path
                       updateReposResult <- P.mapM updateGitRepository repositories

@@ -11,7 +11,7 @@ import           SystemFree
 isEnvironmentReady :: (?systemInterpreter :: SystemFreeInterpreter (ExitCode, String, String)) => IO Bool
 isEnvironmentReady = isGitInstalled
 
-listGitRepositories ::(?boolInterpreter :: SystemFreeInterpreter Bool) => FilePath -> IO [FilePath]
+listGitRepositories ::(?boolInterpreter :: SystemFreeInterpreter Bool) => (?fileInterpreter :: SystemFreeInterpreter [FilePath]) => FilePath -> IO [FilePath]
 listGitRepositories = listDirectoriesRecursive containsGitMetadataDirectory containsOtherVCSMetadataDirectory
 
 updateGitRepository ::(?systemInterpreter :: SystemFreeInterpreter (ExitCode, String, String)) => FilePath -> IO (Either UpdateRepoError UpdateRepoSuccess)
