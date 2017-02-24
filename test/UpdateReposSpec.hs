@@ -14,7 +14,7 @@ import           Test.Hspec
 import           Test.QuickCheck
 import           UpdateRepos
 
-spec = describe "Git module requirements" $ do
+spec = describe "UpdateRepos module requirements" $ do
   it "returns false if Git is not installed" $ unsafePerformIO $ do
      let ?systemInterpreter = gitInstalledInterpreter False
      result <- isEnvironmentReady
