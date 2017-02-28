@@ -1,15 +1,21 @@
-module System (listDirectoriesRecursive, separator) where
+{-# LANGUAGE ImplicitParams #-}
+
+module System (listDirectoriesRecursive
+  , separator
+  , appendSeparatorIfNeeded)
+  where
 
 import           Control.Monad
 import qualified Control.Monad.Parallel as P
 import           Data.List
-import           System.Directory
 import           System.FilePath.Posix
+import           SystemFree
+import           System.Exit
 
 type FilesPredicate = [FilePath] -> Bool
 type StopSearchingPredicate = [FilePath] -> Bool
 
-listDirectoriesRecursive :: FilesPredicate -> StopSearchingPredicate -> FilePath -> IO [FilePath]
+listDirectoriesRecursive :: (?boolInterpreter :: SystemFreeInterpreter Bool) => (?fileInterpreter :: SystemFreeInterpreter [FilePath]) => FilesPredicate -> StopSearchingPredicate -> FilePath -> IO [FilePath]
 listDirectoriesRecursive predicate stopSearchingPredicate absPath =
   do let path = appendSeparatorIfNeeded absPath
      subDirectories <- listDirectories path
@@ -23,15 +29,15 @@ listDirectoriesRecursive predicate stopSearchingPredicate absPath =
                                        return (path : restOfGitDirectories)
              else return (concat restOfDirectories)
 
-listDirectories :: FilePath -> IO [FilePath]
-listDirectories path = do subFilesAndSubDirectories <- listDirectory path
+listDirectories :: (?boolInterpreter :: SystemFreeInterpreter Bool) => (?fileInterpreter :: SystemFreeInterpreter [FilePath]) => FilePath -> IO [FilePath]
+listDirectories path = do subFilesAndSubDirectories <- ?fileInterpreter $ listDirectory' path
                           let absolutePath = map (\sub -> path ++ sub) subFilesAndSubDirectories
                               absPathsWithSeparators = map appendSeparatorIfNeeded absolutePath
                           filterM isDirectory absPathsWithSeparators
 
-isDirectory :: FilePath -> IO Bool
+isDirectory :: (?boolInterpreter :: SystemFreeInterpreter Bool) => FilePath -> IO Bool
 isDirectory absolutePath = do let isHidden = "." `isPrefixOf` absolutePath
-                              isDirectory <- doesDirectoryExist absolutePath
+                              isDirectory <- ?boolInterpreter $ isDirectory' absolutePath
                               return (isDirectory && not isHidden)
 
 appendSeparatorIfNeeded :: String -> String

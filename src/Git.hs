@@ -1,3 +1,5 @@
+{-# LANGUAGE ImplicitParams #-}
+
 module Git (
     UpdateRepoError(..)
   , UpdateRepoSuccess(..)
@@ -10,9 +12,8 @@ module Git (
 
 import           Data.List.Split
 import           System
-import           System.Directory
 import           System.Exit
-import           System.Process
+import           SystemFree
 
 data UpdateRepoError = UpdateRepoError {
   path    :: FilePath
@@ -24,20 +25,20 @@ data UpdateRepoSuccess = UpdateRepoSuccess {
 , result :: String
 } deriving (Eq, Show)
 
-isGitInstalled :: IO Bool
-isGitInstalled = do (exitCode, stdOut, stdErr) <- readProcessWithExitCode "git" ["--version"] []
+isGitInstalled :: (?systemInterpreter :: SystemFreeInterpreter (ExitCode, String, String)) => IO Bool
+isGitInstalled = do (exitCode, stdOut, stdErr) <- ?systemInterpreter $ execute "git" ["--version"]
                     return (exitCode == ExitSuccess)
 
-getCurrentBranch :: FilePath ->  IO String
+getCurrentBranch :: (?systemInterpreter :: SystemFreeInterpreter (ExitCode, String, String)) => FilePath ->  IO String
 getCurrentBranch path = do let gitRepoPath = appendGitFolder path
-                           (exitCode, stdOut, stdErr) <- readProcessWithExitCode "git" ["--git-dir", gitRepoPath, "branch"] []
+                           (exitCode, stdOut, stdErr) <- ?systemInterpreter $ execute "git" ["--git-dir", gitRepoPath, "branch"]
                            return (extractCurrentBranch stdOut)
 
-updateRepo :: FilePath -> String -> IO (Either UpdateRepoError UpdateRepoSuccess)
+updateRepo :: (?systemInterpreter :: SystemFreeInterpreter (ExitCode, String, String)) => FilePath -> String -> IO (Either UpdateRepoError UpdateRepoSuccess)
 updateRepo path branch = do let gitRepoPath = appendGitFolder path
-                            readProcessWithExitCode "git" ["--git-dir", "--work-tree", path, gitRepoPath, "fetch", "origin", "master"] []
-                            readProcessWithExitCode "git" ["--git-dir", "--work-tree", path, gitRepoPath, "fetch", "origin", "develop"] []
-                            (exitCode, stdOut, stdErr) <- readProcessWithExitCode "git" ["--git-dir", gitRepoPath, "--work-tree", path, "pull", "origin", branch, "-n" , "-f"] []
+                            ?systemInterpreter $ execute "git" ["--git-dir", "--work-tree", path, gitRepoPath, "fetch", "origin", "master"]
+                            ?systemInterpreter $ execute "git" ["--git-dir", "--work-tree", path, gitRepoPath, "fetch", "origin", "develop"]
+                            (exitCode, stdOut, stdErr) <- ?systemInterpreter $ execute "git" ["--git-dir", gitRepoPath, "--work-tree", path, "pull", "origin", branch, "-n" , "-f"]
                             if exitCode == ExitSuccess then return (Right (UpdateRepoSuccess path stdOut))
                             else return (Left (UpdateRepoError path stdErr))
 

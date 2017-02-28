@@ -1,16 +1,19 @@
+{-# LANGUAGE ImplicitParams #-}
+
 module UpdateRepos where
 
 import           Data.Either
 import           Git
 import           System
+import           System.Exit
+import           SystemFree
 
-
-isEnvironmentReady :: IO Bool
+isEnvironmentReady :: (?systemInterpreter :: SystemFreeInterpreter (ExitCode, String, String)) => IO Bool
 isEnvironmentReady = isGitInstalled
 
-listGitRepositories :: FilePath -> IO [FilePath]
+listGitRepositories ::(?boolInterpreter :: SystemFreeInterpreter Bool) => (?fileInterpreter :: SystemFreeInterpreter [FilePath]) => FilePath -> IO [FilePath]
 listGitRepositories = listDirectoriesRecursive containsGitMetadataDirectory containsOtherVCSMetadataDirectory
 
-updateGitRepository :: FilePath -> IO (Either UpdateRepoError UpdateRepoSuccess)
+updateGitRepository ::(?systemInterpreter :: SystemFreeInterpreter (ExitCode, String, String)) => FilePath -> IO (Either UpdateRepoError UpdateRepoSuccess)
 updateGitRepository path = do currentBranch <- getCurrentBranch path
                               updateRepo path currentBranch
