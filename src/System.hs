@@ -1,6 +1,9 @@
 {-# LANGUAGE ImplicitParams #-}
 
-module System (listDirectoriesRecursive, separator) where
+module System (listDirectoriesRecursive
+  , separator
+  , appendSeparatorIfNeeded)
+  where
 
 import           Control.Monad
 import qualified Control.Monad.Parallel as P
