@@ -1,5 +1,5 @@
 name:                update-repos
-version:             0.0.1
+version:             0.1.0
 synopsis:            Update all your git repositories with just one command.
 description:         Please see README.md
 homepage:            https://github.com/pedrovgs/update-repos
