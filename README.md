@@ -6,7 +6,7 @@ A command line tool used to update all your git repositories with just one comma
 
 ### Screencast:
 
-![screencast](./art/screencast.git)
+![screencast](./art/screencast.gif)
 
 ### Usage:
 
