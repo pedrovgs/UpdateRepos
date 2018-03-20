@@ -2,7 +2,7 @@ name:                update-repos
 version:             0.1.0
 synopsis:            Update all your git repositories with just one command.
 description:         Please see README.md
-homepage:            https://github.com/pedrovgs/update-repos
+homepage:            https://github.com/pedrovgs/UpdateRepos
 license:             Apache-2.0
 license-file:        LICENSE
 author:              Pedro Vicente Gómez Sánchez
@@ -57,4 +57,4 @@ test-suite update-repos-test
 
 source-repository head
   type:     git
-  location: https://github.com/pedrovgs/update-repos
+  location: https://github.com/pedrovgs/UpdateRepos
