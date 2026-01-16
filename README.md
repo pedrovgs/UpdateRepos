@@ -1,4 +1,4 @@
-# UpdateRepos [![Build Status](https://travis-ci.org/pedrovgs/UpdateRepos.svg?branch=master)](https://travis-ci.org/pedrovgs/UpdateRepos)
+# UpdateRepos
 
 A command line tool used to update all your git repositories with just one command. Written using purely functional Haskell.
 
